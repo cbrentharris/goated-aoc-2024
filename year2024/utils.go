@@ -9,3 +9,8 @@ func ReadInput(location string) string {
 	}
 	return string(file)
 }
+
+type Coordinate struct {
+	X int
+	Y int
+}
