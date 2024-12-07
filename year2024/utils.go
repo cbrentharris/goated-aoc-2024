@@ -1,6 +1,9 @@
 package year2024
 
-import "os"
+import (
+	"os"
+	"strconv"
+)
 
 func ReadInput(location string) string {
 	file, err := os.ReadFile(location)
@@ -13,4 +16,16 @@ func ReadInput(location string) string {
 type Coordinate struct {
 	X int
 	Y int
+}
+
+func ToIntSlice(strings []string) []int {
+	ints := make([]int, len(strings))
+	for i, s := range strings {
+		n, err := strconv.Atoi(s)
+		if err != nil {
+			panic(err)
+		}
+		ints[i] = n
+	}
+	return ints
 }
