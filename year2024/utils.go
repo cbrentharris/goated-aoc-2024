@@ -29,3 +29,23 @@ func ToIntSlice(strings []string) []int {
 	}
 	return ints
 }
+
+func ToRuneSlice(strings []string) [][]rune {
+	runes := make([][]rune, len(strings))
+	for i, s := range strings {
+		runes[i] = []rune(s)
+	}
+	return runes
+}
+
+func OffTheMap(coordinate Coordinate, grid [][]rune) bool {
+	return coordinate.Y >= len(grid) || coordinate.Y < 0 || coordinate.X >= len(grid[0]) || coordinate.X < 0
+}
+
+func Abs(a int, b int) int {
+	if a >= b {
+		return a - b
+	} else {
+		return b - a
+	}
+}

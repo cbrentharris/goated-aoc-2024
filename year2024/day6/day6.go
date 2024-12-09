@@ -24,7 +24,7 @@ func CountGuardMovements(input string) int {
 	direction, coordinate := findInitialCoordinateAndDirection(grid)
 	coordinatesTraversed := make(map[year2024.Coordinate]struct{})
 	coordinatesTraversed[coordinate] = struct{}{}
-	for !offTheMap(coordinate, grid) {
+	for !year2024.OffTheMap(coordinate, grid) {
 		direction, coordinate = nextDirectionAndCoordinate(direction, coordinate, grid)
 		coordinatesTraversed[coordinate] = struct{}{}
 	}
@@ -47,7 +47,7 @@ func nextDirection(direction int32) int32 {
 
 func nextDirectionAndCoordinate(direction int32, coordinate year2024.Coordinate, grid [][]rune) (int32, year2024.Coordinate) {
 	nextCoord := nextCoordinate(direction, coordinate)
-	if offTheMap(nextCoord, grid) {
+	if year2024.OffTheMap(nextCoord, grid) {
 		return direction, nextCoord
 	}
 	nextRune := grid[nextCoord.Y][nextCoord.X]
@@ -70,10 +70,6 @@ func nextCoordinate(direction int32, coordinate year2024.Coordinate) year2024.Co
 		return year2024.Coordinate{X: coordinate.X - 1, Y: coordinate.Y}
 	}
 	panic(fmt.Sprintf("Unknown direction: %c", direction))
-}
-
-func offTheMap(coordinate year2024.Coordinate, grid [][]rune) bool {
-	return coordinate.Y >= len(grid) || coordinate.Y < 0 || coordinate.X >= len(grid[0]) || coordinate.X < 0
 }
 
 func findInitialCoordinateAndDirection(grid [][]rune) (int32, year2024.Coordinate) {
@@ -115,7 +111,7 @@ func canCreateLoop(loopCandidate year2024.Coordinate, grid [][]rune) bool {
 	loopDetected := false
 	direction, coordinate := findInitialCoordinateAndDirection(grid)
 	totalSteps := 0
-	for !offTheMap(coordinate, grid) {
+	for !year2024.OffTheMap(coordinate, grid) {
 		direction, coordinate = nextDirectionAndCoordinate(direction, coordinate, grid)
 		totalSteps++
 		if totalSteps > 2*len(grid)*len(grid[0]) {
