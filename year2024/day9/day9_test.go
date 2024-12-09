@@ -19,6 +19,13 @@ func TestDayOnePartOneExample(t *testing.T) {
 func BenchmarkPartOne(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		input := generateRandomIntegerString(20000)
+		OptimizeContiguousFreeSpace(input)
+	}
+}
+
+func BenchmarkPartTwo(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		input := generateRandomIntegerString(20000)
 		OptimizeContiguousFreeSpaceWithoutFragmentation(input)
 	}
 }
