@@ -37,7 +37,7 @@ func TestDaySevenPartTwoExample(t *testing.T) {
 
 func TestDaySevenPartTwo(t *testing.T) {
 	result := GuessCalibrationEquations(year2024.ReadInput("input.txt"), true)
-	if result != 4998764814652 {
-		t.Errorf("Expected 4998764814652 calibration result, found %d", result)
+	if result != 37598910447546 {
+		t.Errorf("Expected 37598910447546 calibration result, found %d", result)
 	}
 }
