@@ -8,8 +8,10 @@ import (
 var (
     // Every valid mul instruction must be mul(num,num)
     mulOperatorRegex = regexp.MustCompile("mul\\(\\d+,\\d+\\)")
+    v2Regex          = regexp.MustCompile("(mul\\(\\d+,\\d+\\)|do\\(\\)|don't\\(\\))")
     numberRegex      = regexp.MustCompile("\\d+")
-    crazyRegex       = regexp.MustCompile("(?<=^|[^a-zA-Z0-9])(?!.*\\bdon't\\(\\))(?!.*\\bdo\\(\\)[^a-zA-Z0-9]*mul\\().*\\bmul\\([^\\)]*\\)")
+    doRegex          = regexp.MustCompile("do\\(\\)")
+    dontRegex        = regexp.MustCompile("don't\\(\\)")
 )
 
 func CorruptedProgramExecutor(program string) int {
@@ -22,11 +24,19 @@ func CorruptedProgramExecutor(program string) int {
     return total
 }
 func CorruptedProgramExecutorV2(program string) int {
-    matches := crazyRegex.FindAllString(program, -1)
+    matches := v2Regex.FindAllString(program, -1)
     total := 0
+    multiplicationEnabled := true
     for _, match := range matches {
-        lhs, rhs := parseLhsAndRhs(match)
-        total += lhs * rhs
+        switch {
+        case doRegex.MatchString(match):
+            multiplicationEnabled = true
+        case dontRegex.MatchString(match):
+            multiplicationEnabled = false
+        case multiplicationEnabled && mulOperatorRegex.MatchString(match):
+            lhs, rhs := parseLhsAndRhs(match)
+            total += lhs * rhs
+        }
     }
     return total
 }
