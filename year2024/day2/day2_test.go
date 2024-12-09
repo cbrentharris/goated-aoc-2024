@@ -1,8 +1,8 @@
 package day2
 
 import (
+	"goated-aoc-2024/year2024"
 	"testing"
-	"year2024"
 )
 
 func TestDayTwoPartOneExample(t *testing.T) {
