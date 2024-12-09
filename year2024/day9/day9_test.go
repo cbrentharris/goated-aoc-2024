@@ -1,7 +1,9 @@
 package day9
 
 import (
+	"bytes"
 	"goated-aoc-2024/year2024"
+	"math/rand"
 	"testing"
 )
 
@@ -12,6 +14,23 @@ func TestDayOnePartOneExample(t *testing.T) {
 	if checksum != 1928 {
 		t.Errorf("Expected checksum 1928, got %d", checksum)
 	}
+}
+
+func BenchmarkPartOne(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		input := generateRandomIntegerString(20000)
+		OptimizeContiguousFreeSpaceWithoutFragmentation(input)
+	}
+}
+
+func generateRandomIntegerString(length int) string {
+	const digits = "0123456789"
+
+	var buf bytes.Buffer
+	for i := 0; i < length; i++ {
+		buf.WriteByte(digits[rand.Intn(len(digits))])
+	}
+	return buf.String()
 }
 
 func TestDayOnePartOne(t *testing.T) {
