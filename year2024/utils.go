@@ -38,7 +38,7 @@ func ToRuneSlice(strings []string) [][]rune {
 	return runes
 }
 
-func OffTheMap(coordinate Coordinate, grid [][]rune) bool {
+func OffTheMap[T any](coordinate Coordinate, grid [][]T) bool {
 	return coordinate.Y >= len(grid) || coordinate.Y < 0 || coordinate.X >= len(grid[0]) || coordinate.X < 0
 }
 
@@ -140,4 +140,52 @@ func (h *MinHeap) Peek() (int, bool) {
 		return 0, false
 	}
 	return h.elements[0], true
+}
+
+func AdjacentCoordinates[T any](coordinate Coordinate, grid [][]T) []Coordinate {
+	var adjacencies []Coordinate
+	up := Coordinate{X: coordinate.X, Y: coordinate.Y - 1}
+	down := Coordinate{X: coordinate.X, Y: coordinate.Y + 1}
+	left := Coordinate{X: coordinate.X - 1, Y: coordinate.Y}
+	right := Coordinate{X: coordinate.X + 1, Y: coordinate.Y}
+	for _, c := range []Coordinate{up, down, left, right} {
+		if !OffTheMap(c, grid) {
+			adjacencies = append(adjacencies, c)
+		}
+	}
+	return adjacencies
+}
+
+type HashSet[T comparable] struct {
+	elements map[T]struct{}
+}
+
+func NewHashSet[T comparable]() *HashSet[T] {
+	return &HashSet[T]{elements: make(map[T]struct{})}
+}
+
+func (h *HashSet[T]) Add(element T) {
+	if h.elements == nil {
+		h.elements = make(map[T]struct{})
+	}
+	h.elements[element] = struct{}{}
+}
+
+func (h *HashSet[T]) Remove(element T) {
+	delete(h.elements, element)
+}
+
+func (h *HashSet[T]) Size() int {
+	return len(h.elements)
+}
+
+func (h *HashSet[T]) Iterator() <-chan T {
+	ch := make(chan T)
+	go func() {
+		defer close(ch)
+		for key := range h.elements {
+			ch <- key
+		}
+	}()
+	return ch
 }
