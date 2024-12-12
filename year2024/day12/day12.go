@@ -36,9 +36,8 @@ func (r *Region) CostWithSides() int {
 }
 
 func (r *Region) Corners() int {
-	edges := r.Edges()
 	total := 0
-	for edge := range edges.Iterator() {
+	for edge := range r.Coordinates.Iterator() {
 		up := year2024.Coordinate{X: edge.X, Y: edge.Y - 1}
 		down := year2024.Coordinate{X: edge.X, Y: edge.Y + 1}
 		left := year2024.Coordinate{X: edge.X - 1, Y: edge.Y}
@@ -78,19 +77,6 @@ func (r *Region) Corners() int {
 		total += corners
 	}
 	return total
-}
-
-func (r *Region) Edges() *year2024.HashSet[year2024.Coordinate] {
-	edges := year2024.NewHashSet[year2024.Coordinate]()
-	for coordinate := range r.Coordinates.Iterator() {
-		adjacencies := year2024.FullAdjacenciesIncludingOffTheMap(coordinate)
-		for _, adjacency := range adjacencies {
-			if !r.Coordinates.Contains(adjacency) {
-				edges.Add(coordinate)
-			}
-		}
-	}
-	return edges
 }
 
 func CalculateFenceCost(input string, useSides bool) int {
