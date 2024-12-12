@@ -156,6 +156,26 @@ func AdjacentCoordinates[T any](coordinate Coordinate, grid [][]T) []Coordinate 
 	return adjacencies
 }
 
+func AdjacentCoordinatesIncludingOffTheMap(coordinate Coordinate) []Coordinate {
+	up := Coordinate{X: coordinate.X, Y: coordinate.Y - 1}
+	down := Coordinate{X: coordinate.X, Y: coordinate.Y + 1}
+	left := Coordinate{X: coordinate.X - 1, Y: coordinate.Y}
+	right := Coordinate{X: coordinate.X + 1, Y: coordinate.Y}
+	return []Coordinate{up, down, left, right}
+}
+
+func FullAdjacenciesIncludingOffTheMap(coordinate Coordinate) []Coordinate {
+	up := Coordinate{X: coordinate.X, Y: coordinate.Y - 1}
+	down := Coordinate{X: coordinate.X, Y: coordinate.Y + 1}
+	left := Coordinate{X: coordinate.X - 1, Y: coordinate.Y}
+	right := Coordinate{X: coordinate.X + 1, Y: coordinate.Y}
+	upLeft := Coordinate{X: coordinate.X - 1, Y: coordinate.Y - 1}
+	upRight := Coordinate{X: coordinate.X + 1, Y: coordinate.Y - 1}
+	downLeft := Coordinate{X: coordinate.X - 1, Y: coordinate.Y + 1}
+	downRight := Coordinate{X: coordinate.X + 1, Y: coordinate.Y + 1}
+	return []Coordinate{up, down, left, right, upLeft, upRight, downLeft, downRight}
+}
+
 type HashSet[T comparable] struct {
 	elements map[T]struct{}
 }
@@ -188,4 +208,19 @@ func (h *HashSet[T]) Iterator() <-chan T {
 		}
 	}()
 	return ch
+}
+
+func (h *HashSet[T]) Contains(key T) bool {
+	_, exists := h.elements[key]
+	return exists
+}
+
+func (h *HashSet[T]) Values() []T {
+	values := make([]T, len(h.elements))
+	index := 0
+	for k := range h.elements {
+		values[index] = k
+		index++
+	}
+	return values
 }

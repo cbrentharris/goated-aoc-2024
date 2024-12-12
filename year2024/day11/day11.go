@@ -17,17 +17,16 @@ type BlinkState struct {
 }
 
 func CountStones(input string, blinkCount int) int {
-	memo := make(map[BlinkState]int)
 	total := 0
 	wg := sync.WaitGroup{}
 	intermediateChannel := make(chan int)
-	var mu sync.Mutex
 	for _, stone := range year2024.ToIntSlice(strings.Split(input, " ")) {
 		wg.Add(1)
 		go func(stone int) {
 			defer wg.Done()
 			// Each goroutine computes the result for a stone
-			result := countEventualStones(BlinkState{StoneId: stone, BlinkCount: 0}, &memo, &mu, blinkCount)
+			memo := make(map[BlinkState]int)
+			result := countEventualStones(BlinkState{StoneId: stone, BlinkCount: 0}, &memo, blinkCount)
 			intermediateChannel <- result // Send the result to the total channel
 		}(stone)
 	}
@@ -41,10 +40,8 @@ func CountStones(input string, blinkCount int) int {
 	return total
 }
 
-func countEventualStones(blinkState BlinkState, memo *map[BlinkState]int, mu *sync.Mutex, maxBlinks int) int {
-	mu.Lock()
+func countEventualStones(blinkState BlinkState, memo *map[BlinkState]int, maxBlinks int) int {
 	count, exists := (*memo)[blinkState]
-	mu.Unlock()
 	if exists {
 		return count
 	}
@@ -53,24 +50,18 @@ func countEventualStones(blinkState BlinkState, memo *map[BlinkState]int, mu *sy
 	}
 
 	if blinkState.StoneId == 0 {
-		child := countEventualStones(BlinkState{StoneId: 1, BlinkCount: blinkState.BlinkCount + 1}, memo, mu, maxBlinks)
-		mu.Lock()
+		child := countEventualStones(BlinkState{StoneId: 1, BlinkCount: blinkState.BlinkCount + 1}, memo, maxBlinks)
 		(*memo)[blinkState] = child
-		mu.Unlock()
 		return child
 	} else if hasEvenDigits(blinkState.StoneId) {
 		left, right := split(blinkState.StoneId)
-		leftChild := countEventualStones(BlinkState{StoneId: left, BlinkCount: blinkState.BlinkCount + 1}, memo, mu, maxBlinks)
-		rightChild := countEventualStones(BlinkState{StoneId: right, BlinkCount: blinkState.BlinkCount + 1}, memo, mu, maxBlinks)
-		mu.Lock()
+		leftChild := countEventualStones(BlinkState{StoneId: left, BlinkCount: blinkState.BlinkCount + 1}, memo, maxBlinks)
+		rightChild := countEventualStones(BlinkState{StoneId: right, BlinkCount: blinkState.BlinkCount + 1}, memo, maxBlinks)
 		(*memo)[blinkState] = leftChild + rightChild
-		mu.Unlock()
 		return leftChild + rightChild
 	} else {
-		child := countEventualStones(BlinkState{StoneId: blinkState.StoneId * 2024, BlinkCount: blinkState.BlinkCount + 1}, memo, mu, maxBlinks)
-		mu.Lock()
+		child := countEventualStones(BlinkState{StoneId: blinkState.StoneId * 2024, BlinkCount: blinkState.BlinkCount + 1}, memo, maxBlinks)
 		(*memo)[blinkState] = child
-		mu.Unlock()
 		return child
 	}
 }
