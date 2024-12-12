@@ -48,44 +48,31 @@ func (r *Region) Corners() int {
 		downLeft := year2024.Coordinate{X: edge.X - 1, Y: edge.Y + 1}
 		downRight := year2024.Coordinate{X: edge.X + 1, Y: edge.Y + 1}
 		corners := 0
-		hasNeitherUpNorLeft := !r.Coordinates.Contains(up) && !r.Coordinates.Contains(left)
-		hasNeitherDownNorLeft := !r.Coordinates.Contains(down) && !r.Coordinates.Contains(left)
-		hasNeitherUpNorRight := !r.Coordinates.Contains(up) && !r.Coordinates.Contains(right)
-		hasNeitherDownNorRight := !r.Coordinates.Contains(down) && !r.Coordinates.Contains(right)
-		if hasNeitherUpNorLeft {
-			corners++
-		}
-		if hasNeitherDownNorLeft {
-			corners++
-		}
-		if hasNeitherUpNorRight {
-			corners++
-		}
-		if hasNeitherDownNorRight {
-			corners++
-		}
-		if !r.Coordinates.Contains(upLeft) {
-			hasUpAndLeft := r.Coordinates.Contains(up) && r.Coordinates.Contains(left)
-			if hasUpAndLeft {
+		for _, coordinates := range [][]year2024.Coordinate{
+			{up, left, upLeft},
+			{up, right, upRight},
+			{down, left, downLeft},
+			{down, right, downRight}} {
+			// A corner is defined as:
+			// Any time two adjacencies are not in the segment, i.e.
+			//   B A B
+			//   B C B
+			//   B B B
+			// left of C is B, top of B is A, thats a corner.
+			// Additionally, a corner can be if it has two adjacencies but the diagnoal is different, so
+			//  B A B
+			//  A A B
+			//  C C C
+			// So the middle A has top A and left A, but top left is B, so thats a corner
+			doesNotHaveTheFirstTwo := !(r.Coordinates.Contains(coordinates[0]) || r.Coordinates.Contains(coordinates[1]))
+			if doesNotHaveTheFirstTwo {
 				corners++
 			}
-		}
-		if !r.Coordinates.Contains(upRight) {
-			hasUpAndRight := r.Coordinates.Contains(up) && r.Coordinates.Contains(right)
-			if hasUpAndRight {
-				corners++
-			}
-		}
-		if !r.Coordinates.Contains(downLeft) {
-			hasDownAndLeft := r.Coordinates.Contains(down) && r.Coordinates.Contains(left)
-			if hasDownAndLeft {
-				corners++
-			}
-		}
-		if !r.Coordinates.Contains(downRight) {
-			hasDownAndRight := r.Coordinates.Contains(down) && r.Coordinates.Contains(right)
-			if hasDownAndRight {
-				corners++
+			hasTheFirstTwo := r.Coordinates.Contains(coordinates[0]) && r.Coordinates.Contains(coordinates[1])
+			if !r.Coordinates.Contains(coordinates[2]) {
+				if hasTheFirstTwo {
+					corners++
+				}
 			}
 		}
 		total += corners
