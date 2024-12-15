@@ -42,7 +42,7 @@ type Robot struct {
 	V          Velocity
 }
 
-func FindChristmasTree(input string, width, height int) int {
+func FindChristmasTree(input string, width, height int, print bool) int {
 	initialRobotCoordinates := year2024.NewHashSet[Robot]()
 	for _, line := range strings.Split(input, "\n") {
 		nums := year2024.ToIntSlice(numberRegex.FindAllString(line, 4))
@@ -87,15 +87,17 @@ func FindChristmasTree(input string, width, height int) int {
 					containsNextThree := robotCoordinates.Contains(year2024.Coordinate{X: c.X - 1, Y: c.Y + 1}) && robotCoordinates.Contains(year2024.Coordinate{X: c.X + 1, Y: c.Y + 1}) && robotCoordinates.Contains(year2024.Coordinate{X: c.X, Y: c.Y + 1})
 					containsNextFive := robotCoordinates.Contains(year2024.Coordinate{X: c.X - 2, Y: c.Y + 2}) && robotCoordinates.Contains(year2024.Coordinate{X: c.X + 2, Y: c.Y + 2}) && robotCoordinates.Contains(year2024.Coordinate{X: c.X - 1, Y: c.Y + 2}) && robotCoordinates.Contains(year2024.Coordinate{X: c.X + 1, Y: c.Y + 2}) && robotCoordinates.Contains(year2024.Coordinate{X: c.X, Y: c.Y + 2})
 					if containsNextThree && containsNextFive {
-						for y := 0; y < height; y++ {
-							for x := 0; x < width; x++ {
-								if robotCoordinates.Contains(year2024.Coordinate{X: x, Y: y}) {
-									fmt.Print("*")
-								} else {
-									fmt.Print(".")
+						if print {
+							for y := 0; y < height; y++ {
+								for x := 0; x < width; x++ {
+									if robotCoordinates.Contains(year2024.Coordinate{X: x, Y: y}) {
+										fmt.Print("*")
+									} else {
+										fmt.Print(".")
+									}
 								}
+								fmt.Println("")
 							}
-							fmt.Println("")
 						}
 						select {
 						case result <- second:

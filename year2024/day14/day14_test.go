@@ -18,7 +18,7 @@ p=7,3 v=-1,2
 p=2,4 v=2,-3
 p=9,5 v=-3,-3`
 
-func TestDayOnePartOneExample(t *testing.T) {
+func TestDayFourteenPartOneExample(t *testing.T) {
 	result := CalculateSafetyScore(example, 11, 7, 100)
 
 	if result != 12 {
@@ -26,7 +26,7 @@ func TestDayOnePartOneExample(t *testing.T) {
 	}
 }
 
-func TestDayOnePartOne(t *testing.T) {
+func TestDayFourteenPartOne(t *testing.T) {
 	result := CalculateSafetyScore(year2024.ReadInput("input.txt"), 101, 103, 100)
 
 	if result <= 218699784 {
@@ -37,9 +37,15 @@ func TestDayOnePartOne(t *testing.T) {
 	}
 }
 
-func TestDayOnePartTwo(t *testing.T) {
-	result := FindChristmasTree(year2024.ReadInput("input.txt"), 101, 103)
+func TestDayFourteenPartTwo(t *testing.T) {
+	result := FindChristmasTree(year2024.ReadInput("input.txt"), 101, 103, true)
 	if result != 8280 {
 		t.Errorf("Expected seconds of finding christmas tree to be 8280, instead got %d", result)
+	}
+}
+
+func BenchmarkDayFourteenPartTwo(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		FindChristmasTree(year2024.ReadInput("input.txt"), 101, 103, false)
 	}
 }
