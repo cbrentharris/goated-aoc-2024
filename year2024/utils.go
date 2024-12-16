@@ -224,3 +224,11 @@ func (h *HashSet[T]) Values() []T {
 	}
 	return values
 }
+
+func (h *HashSet[T]) Clone() *HashSet[T] {
+	newHashSet := NewHashSet[T]()
+	for obj := range h.Iterator() {
+		newHashSet.Add(obj)
+	}
+	return newHashSet
+}
