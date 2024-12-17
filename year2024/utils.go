@@ -3,6 +3,7 @@ package year2024
 import (
 	"os"
 	"strconv"
+	"strings"
 )
 
 func ReadInput(location string) string {
@@ -240,4 +241,16 @@ func (h *HashSet[T]) Clone() *HashSet[T] {
 		newHashSet.Add(obj)
 	}
 	return newHashSet
+}
+
+func Mod(a, b int) int {
+	return ((a % b) + b) % b
+}
+
+func Join(a []int, sep string) string {
+	s := make([]string, len(a))
+	for index, value := range a {
+		s[index] = strconv.Itoa(value)
+	}
+	return strings.Join(s, sep)
 }
