@@ -11,16 +11,11 @@ var (
 	startMarker = 'S'
 	endMarker   = 'E'
 	obstacle    = '#'
-	empty       = '.'
 	up          = '^'
 	down        = 'v'
 	left        = '<'
 	right       = '>'
 )
-
-type MinValue struct {
-	Value int
-}
 
 func BestPathScore(input string) (int, int) {
 	grid := year2024.ToRuneSlice(strings.Split(input, "\n"))
@@ -35,13 +30,9 @@ func BestPathScore(input string) (int, int) {
 			}
 		}
 	}
-	memo := make(map[MemoKeyForLowestScore]MemoValue)
-	lowestScore, _ := findLowestScore(start, end, grid, 0, right, &memo, numObstacles)
+	lowestScore, size := dijkstras(start, end, grid)
 
-	coordinatesMemo := make(map[MemoKeyForFindingPoints]bool)
-	coordinates := year2024.NewHashSet[year2024.Coordinate]()
-	findAllCoordinatesToLowestScore(start, end, grid, 0, right, &coordinatesMemo, numObstacles, lowestScore, 0, coordinates)
-	return lowestScore, coordinates.Size()
+	return lowestScore, size
 }
 
 func validateStartAndEnd(start year2024.Coordinate, end year2024.Coordinate, grid [][]rune) {
@@ -51,140 +42,6 @@ func validateStartAndEnd(start year2024.Coordinate, end year2024.Coordinate, gri
 	if grid[end.Y][end.X] != endMarker {
 		panic("bad grid input")
 	}
-}
-
-type MemoKeyForLowestScore struct {
-	Coordinate   year2024.Coordinate
-	Direction    int32
-	VisitedDepth int
-}
-
-type MemoValue struct {
-	Score    int
-	CanReach bool
-}
-
-func findLowestScore(current year2024.Coordinate, end year2024.Coordinate, grid [][]rune, depth int, currentDirection int32, memo *map[MemoKeyForLowestScore]MemoValue, numObstacles int) (int, bool) {
-	if current == end {
-		return 0, true
-	}
-
-	currentValue := grid[current.Y][current.X]
-
-	if currentValue == obstacle {
-		return math.MaxInt, false
-	}
-
-	if year2024.OffTheMap(current, grid) {
-		return math.MaxInt, false
-	}
-
-	tooDeep := depth >= (len(grid)*len(grid[0])-numObstacles)/2
-	if tooDeep {
-		return math.MaxInt, false
-	}
-
-	depth++
-	memoKey := MemoKeyForLowestScore{Coordinate: current, Direction: currentDirection, VisitedDepth: depth}
-
-	value, contains := (*memo)[memoKey]
-	if contains {
-		return value.Score, value.CanReach
-	}
-
-	minPath := math.MaxInt
-	clockwiseCoordinate, clockwiseDirection := rotateClockwise(current, currentDirection)
-	counterClockwiseCoordinate, counterClockwiseDirection := rotateCounterClockwise(current, currentDirection)
-	straight := nextCoordinate(currentDirection, current)
-
-	clockwiseMin, clockwiseCanReach := findLowestScore(clockwiseCoordinate, end, grid, depth, clockwiseDirection, memo, numObstacles)
-	counterClockwiseMin, counterClockwiseCanReach := findLowestScore(counterClockwiseCoordinate, end, grid, depth, counterClockwiseDirection, memo, numObstacles)
-	straightMin, straightCanReach := findLowestScore(straight, end, grid, depth, currentDirection, memo, numObstacles)
-
-	if !clockwiseCanReach && !counterClockwiseCanReach && !straightCanReach {
-		memoValue := MemoValue{Score: math.MaxInt, CanReach: false}
-		(*memo)[memoKey] = memoValue
-		return memoValue.Score, false
-	}
-
-	if clockwiseCanReach {
-		clockwiseMin += 1 + 1000
-	}
-
-	if counterClockwiseCanReach {
-		counterClockwiseMin += 1 + 1000
-	}
-
-	if straightCanReach {
-		straightMin += 1
-	}
-
-	minPath = min(clockwiseMin, counterClockwiseMin, straightMin)
-	memoValue := MemoValue{Score: minPath, CanReach: true}
-	(*memo)[memoKey] = memoValue
-
-	return minPath, true
-}
-
-func findAllCoordinatesToLowestScore(current year2024.Coordinate, end year2024.Coordinate, grid [][]rune, depth int, currentDirection int32, memo *map[MemoKeyForFindingPoints]bool, numObstacles int, target int, runningTotal int, visited *year2024.HashSet[year2024.Coordinate]) bool {
-	if current == end && runningTotal == target {
-		visited.Add(current)
-		return true
-	}
-
-	if current == end {
-		return false
-	}
-
-	if runningTotal > target {
-		return false
-	}
-
-	currentValue := grid[current.Y][current.X]
-
-	if currentValue == obstacle {
-		// Hit an obstacle
-		return false
-	}
-
-	if year2024.OffTheMap(current, grid) {
-		// Off the map
-		return false
-	}
-
-	visitedDepth := depth
-	depth++
-	memoKey := MemoKeyForFindingPoints{Coordinate: current, Direction: currentDirection, Depth: visitedDepth, Score: runningTotal}
-
-	value, contains := (*memo)[memoKey]
-	if contains {
-		return value
-	}
-
-	clockwiseCoordinate, clockwiseDirection := rotateClockwise(current, currentDirection)
-	counterClockwiseCoordinate, counterClockwiseDirection := rotateCounterClockwise(current, currentDirection)
-	straight := nextCoordinate(currentDirection, current)
-
-	clockwiseCanReach := findAllCoordinatesToLowestScore(clockwiseCoordinate, end, grid, depth, clockwiseDirection, memo, numObstacles, target, runningTotal+1+1000, visited)
-	counterClockwiseCanReach := findAllCoordinatesToLowestScore(counterClockwiseCoordinate, end, grid, depth, counterClockwiseDirection, memo, numObstacles, target, runningTotal+1+1000, visited)
-	straightCanReach := findAllCoordinatesToLowestScore(straight, end, grid, depth, currentDirection, memo, numObstacles, target, runningTotal+1, visited)
-
-	canReach := clockwiseCanReach || counterClockwiseCanReach || straightCanReach
-	if canReach {
-		(*memo)[memoKey] = true
-		visited.Add(current)
-		return true
-	} else {
-		(*memo)[memoKey] = false
-		return false
-	}
-}
-
-type MemoKeyForFindingPoints struct {
-	Coordinate year2024.Coordinate
-	Direction  int32
-	Depth      int
-	Score      int
 }
 
 func rotateClockwise(coordinate year2024.Coordinate, direction int32) (year2024.Coordinate, int32) {
@@ -229,4 +86,102 @@ func nextCoordinate(direction int32, coordinate year2024.Coordinate) year2024.Co
 		return year2024.Coordinate{X: coordinate.X - 1, Y: coordinate.Y}
 	}
 	panic(fmt.Sprintf("Unknown direction: %c", direction))
+}
+
+type CoordinateAndDirection struct {
+	Coordinate year2024.Coordinate
+	Distance   int
+	Direction  int32
+}
+
+func dijkstras(start, end year2024.Coordinate, grid [][]rune) (int, int) {
+	heap := year2024.NewMinHeap[CoordinateAndDirection](func(a, b CoordinateAndDirection) bool {
+		return a.Distance < b.Distance
+	})
+	heap.Offer(CoordinateAndDirection{Coordinate: start, Distance: 0, Direction: right})
+	dist := make(map[CoordinateAndDirection]int)
+	dist[CoordinateAndDirection{Coordinate: start, Direction: right}] = 0
+	prev := make(map[CoordinateAndDirection]*year2024.HashSet[CoordinateAndDirection])
+	for y, row := range grid {
+		for x, col := range row {
+			if col == obstacle {
+				continue
+			}
+			c := year2024.Coordinate{X: x, Y: y}
+			if c == start {
+				continue
+			}
+			for _, d := range []int32{up, left, right, down} {
+				dist[CoordinateAndDirection{Coordinate: c, Direction: d}] = math.MaxInt
+			}
+		}
+	}
+	for !heap.IsEmpty() {
+		current, _ := heap.Remove()
+		clockwiseCoordinate, clockwiseDirection := rotateClockwise(current.Coordinate, current.Direction)
+		counterClockwiseCoordinate, counterClockwiseDirection := rotateCounterClockwise(current.Coordinate, current.Direction)
+		straight := nextCoordinate(current.Direction, current.Coordinate)
+		currentCost, _ := dist[CoordinateAndDirection{Coordinate: current.Coordinate, Direction: current.Direction}]
+		newClockwiseCost := currentCost + 1000 + 1
+		newCounterClockwiseCost := currentCost + 1000 + 1
+		newStraightCost := currentCost + 1
+		clockwiseKey := CoordinateAndDirection{Coordinate: clockwiseCoordinate, Direction: clockwiseDirection}
+		counterClockwiseKey := CoordinateAndDirection{Coordinate: counterClockwiseCoordinate, Direction: counterClockwiseDirection}
+		straightKey := CoordinateAndDirection{Coordinate: straight, Direction: current.Direction}
+		clockwiseCost, clockwiseExists := dist[clockwiseKey]
+		counterClockwiseCost, counterClockwiseExists := dist[counterClockwiseKey]
+		straightCost, straightExists := dist[straightKey]
+		if clockwiseExists && clockwiseCost > newClockwiseCost {
+			dist[clockwiseKey] = newClockwiseCost
+			heap.Offer(CoordinateAndDirection{Coordinate: clockwiseCoordinate, Direction: clockwiseDirection, Distance: newClockwiseCost})
+			prev[clockwiseKey] = year2024.NewHashSet[CoordinateAndDirection]()
+			prev[clockwiseKey].Add(current)
+		}
+		if clockwiseCost == newClockwiseCost {
+			prev[clockwiseKey].Add(current)
+		}
+		if counterClockwiseExists && counterClockwiseCost > newCounterClockwiseCost {
+			dist[counterClockwiseKey] = newCounterClockwiseCost
+			heap.Offer(CoordinateAndDirection{Coordinate: counterClockwiseCoordinate, Direction: counterClockwiseDirection, Distance: newCounterClockwiseCost})
+			prev[counterClockwiseKey] = year2024.NewHashSet[CoordinateAndDirection]()
+			prev[counterClockwiseKey].Add(current)
+		}
+		if counterClockwiseCost == newCounterClockwiseCost {
+			prev[counterClockwiseKey].Add(current)
+		}
+		if straightExists && straightCost > newStraightCost {
+			dist[straightKey] = newStraightCost
+			heap.Offer(CoordinateAndDirection{Coordinate: straight, Direction: current.Direction, Distance: newStraightCost})
+			prev[straightKey] = year2024.NewHashSet[CoordinateAndDirection]()
+			prev[straightKey].Add(current)
+		}
+		if straightCost == newStraightCost {
+			prev[straightKey].Add(current)
+		}
+	}
+	minEnd := math.MaxInt
+	for k, v := range dist {
+		if k.Coordinate == end && v < minEnd {
+			minEnd = v
+		}
+	}
+	coordinates := year2024.NewHashSet[year2024.Coordinate]()
+	for k, v := range dist {
+		if v == minEnd && k.Coordinate == end {
+			queue := year2024.Deque[CoordinateAndDirection]{}
+			queue.Enqueue(k)
+			for !queue.IsEmpty() {
+				current, _ := queue.RemoveFirst()
+				coordinates.Add(current.Coordinate)
+				prevKey := CoordinateAndDirection{Coordinate: current.Coordinate, Direction: current.Direction}
+				p, exists := prev[prevKey]
+				if exists {
+					for c := range p.Iterator() {
+						queue.Enqueue(c)
+					}
+				}
+			}
+		}
+	}
+	return minEnd, coordinates.Size()
 }

@@ -82,3 +82,9 @@ func TestDaySixteenPartTwo(t *testing.T) {
 		t.Errorf("Expected best path for example one to have score of 72428, instead found %d", result)
 	}
 }
+
+func BenchmarkTestDaySixteen(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		BestPathScore(year2024.ReadInput("input.txt"))
+	}
+}

@@ -81,18 +81,26 @@ func (q *Deque[T]) IsEmpty() bool {
 	return len(q.elements) == 0
 }
 
-type MinHeap struct {
-	elements []int
+type MinHeap[T comparable] struct {
+	elements []T
+	less     func(a, b T) bool
 }
 
-func (h *MinHeap) Offer(element int) {
+func NewMinHeap[T comparable](less func(a, b T) bool) *MinHeap[T] {
+	return &MinHeap[T]{
+		less: less,
+	}
+}
+
+func (h *MinHeap[T]) Offer(element T) {
 	h.elements = append(h.elements, element)
 	h.bubbleUp(len(h.elements) - 1)
 }
 
-func (h *MinHeap) Remove() (int, bool) {
+func (h *MinHeap[T]) Remove() (T, bool) {
+	var zeroValue T
 	if len(h.elements) == 0 {
-		return 0, false
+		return zeroValue, false
 	}
 	root := h.elements[0]
 
@@ -103,25 +111,25 @@ func (h *MinHeap) Remove() (int, bool) {
 	return root, true
 }
 
-func (h *MinHeap) bubbleUp(index int) {
+func (h *MinHeap[T]) bubbleUp(index int) {
 	parentIndex := (index - 1) / 2
-	for index > 0 && h.elements[index] < h.elements[parentIndex] {
+	for index > 0 && h.less(h.elements[index], h.elements[parentIndex]) {
 		h.elements[index], h.elements[parentIndex] = h.elements[parentIndex], h.elements[index]
 		index = parentIndex
 		parentIndex = (index - 1) / 2
 	}
 }
 
-func (h *MinHeap) bubbleDown(index int) {
+func (h *MinHeap[T]) bubbleDown(index int) {
 	leftChild := 2*index + 1
 	rightChild := 2*index + 2
 	smallest := index
 
-	if leftChild < len(h.elements) && h.elements[leftChild] < h.elements[smallest] {
+	if leftChild < len(h.elements) && h.less(h.elements[leftChild], h.elements[smallest]) {
 		smallest = leftChild
 	}
 
-	if rightChild < len(h.elements) && h.elements[rightChild] < h.elements[smallest] {
+	if rightChild < len(h.elements) && h.less(h.elements[rightChild], h.elements[smallest]) {
 		smallest = rightChild
 	}
 
@@ -131,13 +139,14 @@ func (h *MinHeap) bubbleDown(index int) {
 	}
 }
 
-func (h *MinHeap) IsEmpty() bool {
+func (h *MinHeap[T]) IsEmpty() bool {
 	return len(h.elements) == 0
 }
 
-func (h *MinHeap) Peek() (int, bool) {
+func (h *MinHeap[T]) Peek() (T, bool) {
+	var zeroValue T
 	if len(h.elements) == 0 {
-		return 0, false
+		return zeroValue, false
 	}
 	return h.elements[0], true
 }
