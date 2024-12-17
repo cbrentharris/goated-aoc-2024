@@ -88,20 +88,25 @@ func nextCoordinate(direction int32, coordinate year2024.Coordinate) year2024.Co
 	panic(fmt.Sprintf("Unknown direction: %c", direction))
 }
 
-type CoordinateAndDirection struct {
+type CoordinateDirectionAndScore struct {
 	Coordinate year2024.Coordinate
 	Distance   int
 	Direction  int32
 }
 
+type CoordinateAndDirection struct {
+	Coordinate year2024.Coordinate
+	Direction  int32
+}
+
 func dijkstras(start, end year2024.Coordinate, grid [][]rune) (int, int) {
-	heap := year2024.NewMinHeap[CoordinateAndDirection](func(a, b CoordinateAndDirection) bool {
+	heap := year2024.NewMinHeap[CoordinateDirectionAndScore](func(a, b CoordinateDirectionAndScore) bool {
 		return a.Distance < b.Distance
 	})
-	heap.Offer(CoordinateAndDirection{Coordinate: start, Distance: 0, Direction: right})
+	heap.Offer(CoordinateDirectionAndScore{Coordinate: start, Distance: 0, Direction: right})
 	dist := make(map[CoordinateAndDirection]int)
 	dist[CoordinateAndDirection{Coordinate: start, Direction: right}] = 0
-	prev := make(map[CoordinateAndDirection]*year2024.HashSet[CoordinateAndDirection])
+	prev := make(map[CoordinateAndDirection]*year2024.HashSet[CoordinateDirectionAndScore])
 	for y, row := range grid {
 		for x, col := range row {
 			if col == obstacle {
@@ -133,8 +138,8 @@ func dijkstras(start, end year2024.Coordinate, grid [][]rune) (int, int) {
 		straightCost, straightExists := dist[straightKey]
 		if clockwiseExists && clockwiseCost > newClockwiseCost {
 			dist[clockwiseKey] = newClockwiseCost
-			heap.Offer(CoordinateAndDirection{Coordinate: clockwiseCoordinate, Direction: clockwiseDirection, Distance: newClockwiseCost})
-			prev[clockwiseKey] = year2024.NewHashSet[CoordinateAndDirection]()
+			heap.Offer(CoordinateDirectionAndScore{Coordinate: clockwiseCoordinate, Direction: clockwiseDirection, Distance: newClockwiseCost})
+			prev[clockwiseKey] = year2024.NewHashSet[CoordinateDirectionAndScore]()
 			prev[clockwiseKey].Add(current)
 		}
 		if clockwiseCost == newClockwiseCost {
@@ -142,8 +147,8 @@ func dijkstras(start, end year2024.Coordinate, grid [][]rune) (int, int) {
 		}
 		if counterClockwiseExists && counterClockwiseCost > newCounterClockwiseCost {
 			dist[counterClockwiseKey] = newCounterClockwiseCost
-			heap.Offer(CoordinateAndDirection{Coordinate: counterClockwiseCoordinate, Direction: counterClockwiseDirection, Distance: newCounterClockwiseCost})
-			prev[counterClockwiseKey] = year2024.NewHashSet[CoordinateAndDirection]()
+			heap.Offer(CoordinateDirectionAndScore{Coordinate: counterClockwiseCoordinate, Direction: counterClockwiseDirection, Distance: newCounterClockwiseCost})
+			prev[counterClockwiseKey] = year2024.NewHashSet[CoordinateDirectionAndScore]()
 			prev[counterClockwiseKey].Add(current)
 		}
 		if counterClockwiseCost == newCounterClockwiseCost {
@@ -151,8 +156,8 @@ func dijkstras(start, end year2024.Coordinate, grid [][]rune) (int, int) {
 		}
 		if straightExists && straightCost > newStraightCost {
 			dist[straightKey] = newStraightCost
-			heap.Offer(CoordinateAndDirection{Coordinate: straight, Direction: current.Direction, Distance: newStraightCost})
-			prev[straightKey] = year2024.NewHashSet[CoordinateAndDirection]()
+			heap.Offer(CoordinateDirectionAndScore{Coordinate: straight, Direction: current.Direction, Distance: newStraightCost})
+			prev[straightKey] = year2024.NewHashSet[CoordinateDirectionAndScore]()
 			prev[straightKey].Add(current)
 		}
 		if straightCost == newStraightCost {
@@ -177,7 +182,7 @@ func dijkstras(start, end year2024.Coordinate, grid [][]rune) (int, int) {
 				p, exists := prev[prevKey]
 				if exists {
 					for c := range p.Iterator() {
-						queue.Enqueue(c)
+						queue.Enqueue(CoordinateAndDirection{Coordinate: c.Coordinate, Direction: c.Direction})
 					}
 				}
 			}
