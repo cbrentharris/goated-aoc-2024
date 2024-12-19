@@ -3,6 +3,7 @@ package day19
 import (
 	"goated-aoc-2024/year2024"
 	"strings"
+	"sync"
 )
 
 func CountPossibleDesigns(input string) int {
@@ -19,11 +20,27 @@ func CountPossibleDesigns(input string) int {
 
 func CountPossibleDistinctDesigns(input string) int {
 	patterns, trie := parseInput(input)
-	memo := make(map[string]int)
 	total := 0
+	var wg sync.WaitGroup
+	result := make(chan int)
 	for _, pattern := range patterns {
-		total += countPossiblePatterns([]rune(pattern), trie, &memo)
+		wg.Add(1)
+		go func(p string) {
+			defer wg.Done()
+			memo := make(map[string]int)
+			result <- countPossiblePatterns([]rune(p), trie, &memo)
+		}(pattern)
 	}
+
+	go func() {
+		wg.Wait()
+		close(result)
+	}()
+
+	for r := range result {
+		total += r
+	}
+
 	return total
 }
 
