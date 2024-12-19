@@ -254,3 +254,51 @@ func Join(a []int, sep string) string {
 	}
 	return strings.Join(s, sep)
 }
+
+type TrieNode struct {
+	children map[rune]*TrieNode
+	isEnd    bool
+}
+
+type Trie struct {
+	root *TrieNode
+}
+
+func NewTrie() *Trie {
+	return &Trie{
+		root: &TrieNode{children: make(map[rune]*TrieNode)},
+	}
+}
+
+func (t *Trie) Insert(word string) {
+	currentNode := t.root
+	for _, char := range word {
+		if _, exists := currentNode.children[char]; !exists {
+			currentNode.children[char] = &TrieNode{children: make(map[rune]*TrieNode)}
+		}
+		currentNode = currentNode.children[char]
+	}
+	currentNode.isEnd = true
+}
+
+func (t *Trie) Search(word string) bool {
+	currentNode := t.root
+	for _, char := range word {
+		if _, exists := currentNode.children[char]; !exists {
+			return false
+		}
+		currentNode = currentNode.children[char]
+	}
+	return currentNode.isEnd
+}
+
+func (t *Trie) SearchRunes(input []rune) bool {
+	currentNode := t.root
+	for _, char := range input {
+		if _, exists := currentNode.children[char]; !exists {
+			return false
+		}
+		currentNode = currentNode.children[char]
+	}
+	return currentNode.isEnd
+}
