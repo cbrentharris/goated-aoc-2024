@@ -43,6 +43,10 @@ func OffTheMap[T any](coordinate Coordinate, grid [][]T) bool {
 	return coordinate.Y >= len(grid) || coordinate.Y < 0 || coordinate.X >= len(grid[0]) || coordinate.X < 0
 }
 
+func OffTheMap2[T any](coordinate Coordinate, grid *[][]T) bool {
+	return coordinate.Y >= len(*grid) || coordinate.Y < 0 || coordinate.X >= len((*grid)[0]) || coordinate.X < 0
+}
+
 func Abs(a int, b int) int {
 	if a >= b {
 		return a - b
@@ -80,6 +84,10 @@ func (q *Deque[T]) RemoveLast() (T, bool) {
 
 func (q *Deque[T]) IsEmpty() bool {
 	return len(q.elements) == 0
+}
+
+func (q *Deque[T]) Size() int {
+	return len(q.elements)
 }
 
 type MinHeap[T comparable] struct {
@@ -150,6 +158,10 @@ func (h *MinHeap[T]) Peek() (T, bool) {
 		return zeroValue, false
 	}
 	return h.elements[0], true
+}
+
+func (h *MinHeap[T]) Size() int {
+	return len(h.elements)
 }
 
 func AdjacentCoordinates[T any](coordinate Coordinate, grid [][]T) []Coordinate {
@@ -301,4 +313,8 @@ func (t *Trie) SearchRunes(input []rune) bool {
 		currentNode = currentNode.children[char]
 	}
 	return currentNode.isEnd
+}
+
+func ManhattanDistance(origin Coordinate, point Coordinate) int {
+	return Abs(origin.X, point.X) + Abs(origin.Y, point.Y)
 }
