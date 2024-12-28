@@ -1,6 +1,7 @@
 package year2024
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -317,4 +318,52 @@ func (t *Trie) SearchRunes(input []rune) bool {
 
 func ManhattanDistance(origin Coordinate, point Coordinate) int {
 	return Abs(origin.X, point.X) + Abs(origin.Y, point.Y)
+}
+
+type CircularQueue[T comparable] struct {
+	elements []T
+	size     int
+	head     int
+	tail     int
+}
+
+func NewCircularQueue[T comparable](size int) *CircularQueue[T] {
+	elements := make([]T, size+1)
+	return &CircularQueue[T]{elements: elements}
+}
+
+func (h *CircularQueue[T]) IsFull() bool {
+	if h.tail > h.head {
+		return h.head == 0 && h.tail == len(h.elements)-1
+	} else {
+		return h.head-h.tail == 1
+	}
+}
+
+func (h *CircularQueue[T]) Add(element T) {
+	if h.IsFull() {
+		h.head = Mod(h.head+1, len(h.elements))
+		h.tail = Mod(h.tail+1, len(h.elements))
+		h.elements[Mod(h.tail-1, len(h.elements))] = element
+	} else {
+		h.tail = Mod(h.tail+1, len(h.elements))
+		h.elements[Mod(h.tail-1, len(h.elements))] = element
+	}
+}
+
+func (h *CircularQueue[T]) IsEmpty() bool {
+	return h.tail == h.head
+}
+
+func (h *CircularQueue[T]) ToString() string {
+	var buffer string
+	for i := 0; i < len(h.elements)-1; i++ {
+		index := Mod(h.head+i, len(h.elements))
+		if index == h.tail {
+			break
+		}
+		buffer += fmt.Sprintf("%v", h.elements[index])
+		buffer += ","
+	}
+	return buffer
 }
